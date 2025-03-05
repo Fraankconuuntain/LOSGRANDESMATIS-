@@ -3,7 +3,7 @@ name: Sync Servidor Minecraft to Backup
 on:
   push:
     branches:
-      - main  # Se ejecuta cada vez que haya un push en "main"
+      - main
 
 jobs:
   sync:
@@ -17,10 +17,12 @@ jobs:
           mkdir backup_repo
           cd backup_repo
           git init
-          git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/GITHUB_USUARIO_RESPALDO/REPO_RESPALDO.git
+          git config user.name "FrankRespaldos"
+          git config user.email "frankmulloni2@gmail.com"
+          git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git pull origin main || echo "No previous repo found"
           rm -rf *
           cp -r ../servidor_minecraft .
           git add .
-          git commit -m "Sync servidor_minecraft from main repo"
+          git commit -m "Sync servidor_minecraft from main repo" || echo "No changes to commit"
           git push --force origin main
