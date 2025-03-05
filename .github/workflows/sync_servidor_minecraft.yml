@@ -19,6 +19,7 @@ jobs:
           git init
           git config user.name "FrankRespaldos"
           git config user.email "frankmulloni2@gmail.com"
+          git branch -M main
           git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git pull origin main || echo "No previous repo found"
           rm -rf *
