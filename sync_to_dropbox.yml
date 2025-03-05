@@ -1,0 +1,27 @@
+name: Sync servidor_minecraft to Dropbox
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Instalar rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+          mkdir -p ~/.config/rclone/
+          echo "[dropbox]" > ~/.config/rclone/rclone.conf
+          echo "type = dropbox" >> ~/.config/rclone/rclone.conf
+          echo "token = ${DROPBOX_ACCESS_TOKEN}" >> ~/.config/rclone/rclone.conf
+
+      - name: Subir a Dropbox
+        env:
+          DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
+        run: |
+          rclone copy servidor_minecraft dropbox:/servidor_minecraft --progress
