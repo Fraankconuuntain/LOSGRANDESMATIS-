@@ -1,45 +1,41 @@
 name: Backup Codespace
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # Corre todos los días a medianoche UTC
   push:
     branches:
       - main
-
   workflow_dispatch:  # Permite ejecución manual
-
-  schedule:
-    - cron: '*/10 * * * *'  # Ejecuta cada 10 minutos
 
 jobs:
   backup:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout el repositorio
+      - name: Checkout del repositorio original
         uses: actions/checkout@v3
-
-      - name: Configurar Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        with:
+          repository: Fraankconuuntain/LOSGRANDESMATIS-
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Crear carpeta de respaldo
         run: |
           mkdir -p /tmp/backup_codespace
-          rsync -av --progress . /tmp/backup_codespace --exclude .git --exclude /tmp
+          cp -r . /tmp/backup_codespace/
 
-      - name: Inicializar nuevo repositorio de respaldo
+      - name: Inicializar Git en la carpeta de respaldo
         run: |
           cd /tmp/backup_codespace
           git init
           git remote add origin https://github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
-          git add .
-          git commit -m "Backup automático del Codespace"
-          git branch -M main
+          git config user.name "FrankRespaldos"
+          git config user.email "frankmulloni2@gmail.com"
 
-      - name: Subir cambios al repositorio de respaldo
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Subir respaldo al repositorio de respaldo
         run: |
           cd /tmp/backup_codespace
-          git push --force origin main
+          git add .
+          git commit -m "Backup del Codespace - $(date +'%Y-%m-%d %H:%M:%S')"
+          git branch -M main
+          git push -f https://FrankRespaldos:${{ secrets.PAT_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git main
