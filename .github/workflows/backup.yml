@@ -1,0 +1,27 @@
+name: Backup Codespace
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configurar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Clonar el Codespace
+        run: git clone git@github.com:codespaces/studious-system-pj74wv4xxjr9hj9x.git /tmp/backup_codespace
+
+      - name: Subir respaldo a la cuenta de respaldo
+        run: |
+          cd /tmp/backup_codespace
+          git remote set-url origin git@github.com:FrankRespaldos/RespaldoLosgrandesmatis.git
+          git add .
+          git commit -m "Backup automático del Codespace"
+          git push origin main
