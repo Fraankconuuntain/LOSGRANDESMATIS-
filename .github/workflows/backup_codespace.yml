@@ -2,40 +2,42 @@ name: Backup Codespace
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Corre todos los días a medianoche UTC
+    - cron: "0 0 * * *"  # Ejecutar todos los días a medianoche UTC
   push:
     branches:
-      - main
-  workflow_dispatch:  # Permite ejecución manual
+      - main  # Se ejecuta cuando hay cambios en la rama main
+  workflow_dispatch:  # Permite ejecutar el workflow manualmente
 
 jobs:
   backup:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout del repositorio original
-        uses: actions/checkout@v3
-        with:
-          repository: Fraankconuuntain/LOSGRANDESMATIS-
-          token: ${{ secrets.PAT_TOKEN }}
+      - name: Configurar el entorno
+        run: echo "Conectando con el Codespace..."
 
-      - name: Crear carpeta de respaldo
+      - name: Clonar el repositorio del Codespace
         run: |
-          mkdir -p /tmp/backup_codespace
-          cp -r . /tmp/backup_codespace/
+          git clone https://github.com/codespaces/studious-system-pj74wv4xxjr9hj9x /tmp/backup_codespace
 
       - name: Inicializar Git en la carpeta de respaldo
         run: |
           cd /tmp/backup_codespace
+          if git remote get-url origin; then
+            git remote remove origin
+          fi
           git init
-          git remote add origin https://github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
+          git remote add origin https://FrankRespaldos:${{ secrets.PAT_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git config user.name "FrankRespaldos"
           git config user.email "frankmulloni2@gmail.com"
 
-      - name: Subir respaldo al repositorio de respaldo
+      - name: Hacer commit de los cambios
         run: |
           cd /tmp/backup_codespace
           git add .
-          git commit -m "Backup del Codespace - $(date +'%Y-%m-%d %H:%M:%S')"
+          git commit -m "Respaldo automático del Codespace - $(date +'%Y-%m-%d %H:%M:%S')" || echo "No hay cambios para hacer commit."
+
+      - name: Subir cambios al repositorio de respaldo
+        run: |
+          cd /tmp/backup_codespace
           git branch -M main
-          git push -f https://FrankRespaldos:${{ secrets.PAT_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git main
+          git push -u origin main
