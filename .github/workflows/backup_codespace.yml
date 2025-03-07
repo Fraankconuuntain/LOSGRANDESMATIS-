@@ -19,14 +19,18 @@ jobs:
           git config --global user.email "frankmulloni2@gmail.com"
 
       - name: Clonar el Codespace
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          git clone https://${{ secrets.PAT_TOKEN }}@github.com/codespaces/studious-system-pj74wv4xxjr9hj9x.git /tmp/backup_codespace
+          git clone https://$PAT_TOKEN@github.com/codespaces/studious-system-pj74wv4xxjr9hj9x.git /tmp/backup_codespace
 
       - name: Subir respaldo al repositorio de respaldo
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           cd /tmp/backup_codespace
-          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
+          git remote set-url origin https://$PAT_TOKEN@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git branch -M main
           git add .
-          git commit -m "Respaldo automático del Codespace $(date +'%Y-%m-%d %H:%M:%S')"
-          git push -u origin main
+          git commit -m "Respaldo automático del Codespace $(date +'%Y-%m-%d %H:%M:%S')" || echo "Sin cambios para respaldar"
+          git push -u origin main || echo "No hay cambios nuevos para enviar"
