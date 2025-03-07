@@ -1,4 +1,4 @@
-name: Sync Servidor Minecraft to Backup
+name: Backup Entire Codespace
 
 on:
   push:
@@ -9,14 +9,18 @@ on:
   workflow_dispatch:  # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
-  sync:
+  backup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Copy servidor_minecraft to Backup Repo
+      - name: Listar Archivos en Codespace (Debug)
+        run: ls -la ${{ github.workspace }}
+
+      - name: Copiar todo el Codespace al Repositorio de Respaldo
         run: |
+          cd ${{ github.workspace }}  # Nos aseguramos de estar en la raíz del Codespace
           mkdir backup_repo
           cd backup_repo
           git init
@@ -25,8 +29,11 @@ jobs:
           git branch -M main
           git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git pull origin main || echo "No previous repo found"
+
+          # Copia todo el contenido del Codespace al backup (excepto el propio backup_repo)
           rm -rf *
-          cp -r ../servidor_minecraft .
+          cp -r ${{ github.workspace }}/* .
+
           git add .
-          git commit -m "Sync servidor_minecraft from main repo" || echo "No changes to commit"
+          git commit -m "Backup de todo el Codespace" || echo "No changes to commit"
           git push --force origin main
