@@ -2,37 +2,31 @@ name: Backup Codespace
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Corre una vez al día a la medianoche UTC
-  workflow_dispatch:  # Permite ejecutarlo manualmente
+    - cron: '0 0 * * *' # Ejecutar todos los días a medianoche (opcional)
+  push:
+    branches:
+      - main # Ejecutar cuando haya cambios en main
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub Actions
 
 jobs:
   backup:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar el Codespace
-        run: |
-          git clone https://USERNAME:TOKEN@github.com/codespaces/studious-system-pj74wv4xxjr9hj9x /tmp/backup_codespace
-        env:
-          USERNAME: Fraankconuuntain
-          TOKEN: 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  # <-- Reemplaza con tu Personal Access Token (PAT)
-
       - name: Configurar Git
         run: |
-          git config --global user.email "frankmulloni2@gmail.com"
           git config --global user.name "FrankRespaldos"
+          git config --global user.email "frankmulloni2@gmail.com"
 
-      - name: Inicializar el repositorio de respaldo
+      - name: Clonar el Codespace
         run: |
-          cd /tmp
-          git clone https://FrankRespaldos:TOKEN@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git backup_repo
-        env:
-          TOKEN: TU_TOKEN_AQUI  # <-- Reemplaza con tu Personal Access Token (PAT)
+          git clone https://${{ secrets.PAT_TOKEN }}@github.com/codespaces/studious-system-pj74wv4xxjr9hj9x.git /tmp/backup_codespace
 
-      - name: Copiar los archivos al repositorio de respaldo
+      - name: Subir respaldo al repositorio de respaldo
         run: |
-          cp -r /tmp/backup_codespace/* /tmp/backup_repo/
-          cd /tmp/backup_repo
+          cd /tmp/backup_codespace
+          git remote set-url origin https://${{ secrets.PAT_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
+          git branch -M main
           git add .
-          git commit -m "Backup Codespace - $(date '+%Y-%m-%d %H:%M:%S')"
-          git push origin main
+          git commit -m "Respaldo automático del Codespace $(date +'%Y-%m-%d %H:%M:%S')"
+          git push -u origin main
