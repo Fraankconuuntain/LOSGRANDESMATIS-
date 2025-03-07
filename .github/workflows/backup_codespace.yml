@@ -15,18 +15,18 @@ jobs:
       - name: Checkout el repositorio
         uses: actions/checkout@v3
 
-      - name: Conectar con el Codespace y copiar archivos
-        run: |
-          echo "Conectando con el Codespace..."
-          
-          # Crear carpeta temporal para la copia
-          mkdir -p backup_codespace
-          
-          # Copiar todos los archivos desde el Codespace al runner
-          scp -r ${{ github.workspace }}/* backup_codespace/
+      - name: Verificar el contenido del Codespace (Debug)
+        run: ls -la ${{ github.workspace }}
 
-          # Ir a la carpeta del respaldo
-          cd backup_codespace
+      - name: Preparar carpeta de respaldo
+        run: |
+          echo "Creando carpeta de respaldo..."
+          mkdir -p /tmp/backup_codespace
+          rsync -av --exclude='/tmp/backup_codespace' ${{ github.workspace }}/ /tmp/backup_codespace/
+
+      - name: Subir respaldo al repositorio
+        run: |
+          cd /tmp/backup_codespace
           
           # Configurar git
           git init
