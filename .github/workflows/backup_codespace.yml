@@ -5,8 +5,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '*/10 * * * *'  # Se ejecuta cada 10 minutos automáticamente
-  workflow_dispatch:  # Permite ejecutarlo manualmente desde GitHub
+    - cron: '*/10 * * * *'  # Cada 10 minutos
+  workflow_dispatch:  # Permite ejecutar manualmente
 
 jobs:
   backup:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout el repositorio
         uses: actions/checkout@v3
 
-      - name: Verificar el contenido del Codespace (Debug)
+      - name: Verificar contenido del Codespace
         run: ls -la ${{ github.workspace }}
 
       - name: Preparar carpeta de respaldo
@@ -27,12 +27,16 @@ jobs:
       - name: Subir respaldo al repositorio
         run: |
           cd /tmp/backup_codespace
-          
+
           # Configurar git
           git init
           git config user.name "FrankRespaldos"
           git config user.email "frankmulloni2@gmail.com"
           git branch -M main
+          
+          # Eliminar remote si ya existe para evitar errores
+          git remote remove origin || echo "No remote to remove"
+
           git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git pull origin main || echo "No previous repo found"
 
