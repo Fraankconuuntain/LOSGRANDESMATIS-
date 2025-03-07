@@ -20,8 +20,8 @@ jobs:
 
       - name: Copiar todo el Codespace al Repositorio de Respaldo
         run: |
-          cd ${{ github.workspace }}  # Nos aseguramos de estar en la raíz del Codespace
-          mkdir backup_repo
+          cd /home/runner/work  # Directorio base donde se ejecuta el Codespace
+          mkdir -p backup_repo
           cd backup_repo
           git init
           git config user.name "FrankRespaldos"
@@ -30,9 +30,8 @@ jobs:
           git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
           git pull origin main || echo "No previous repo found"
 
-          # Copia todo el contenido del Codespace al backup (excepto el propio backup_repo)
-          rm -rf *
-          cp -r ${{ github.workspace }}/* .
+          # Copia TODO el contenido del Codespace excepto carpetas innecesarias
+          rsync -av --exclude=backup_repo --exclude=.git --exclude=.github ${{ github.workspace }}/ . 
 
           git add .
           git commit -m "Backup de todo el Codespace" || echo "No changes to commit"
