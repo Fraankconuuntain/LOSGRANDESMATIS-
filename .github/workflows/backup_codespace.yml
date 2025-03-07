@@ -1,4 +1,4 @@
-name: Backup Entire Codespace
+name: Backup Codespace
 
 on:
   push:
@@ -12,23 +12,31 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Backup Repo
+      - name: Checkout el repositorio
         uses: actions/checkout@v3
-        with:
-          repository: FrankRespaldos/RespaldoLosgrandesmatis
-          token: ${{ secrets.BACKUP_GITHUB_TOKEN }}
 
-      - name: Listar archivos del Codespace (Debug)
-        run: ls -la ${{ github.workspace }}
-
-      - name: Copiar todo el Codespace al Repositorio de Respaldo
+      - name: Conectar con el Codespace y copiar archivos
         run: |
+          echo "Conectando con el Codespace..."
+          
+          # Crear carpeta temporal para la copia
+          mkdir -p backup_codespace
+          
+          # Copiar todos los archivos desde el Codespace al runner
+          scp -r ${{ github.workspace }}/* backup_codespace/
+
+          # Ir a la carpeta del respaldo
+          cd backup_codespace
+          
+          # Configurar git
+          git init
           git config user.name "FrankRespaldos"
           git config user.email "frankmulloni2@gmail.com"
+          git branch -M main
+          git remote add origin https://x-access-token:${{ secrets.BACKUP_GITHUB_TOKEN }}@github.com/FrankRespaldos/RespaldoLosgrandesmatis.git
+          git pull origin main || echo "No previous repo found"
 
-          # Copia TODO el contenido del Codespace excepto carpetas innecesarias
-          rsync -av --exclude=.git --exclude=.github $GITHUB_WORKSPACE/ .
-
+          # Agregar y hacer commit de los archivos
           git add .
-          git commit -m "Backup de todo el Codespace" || echo "No changes to commit"
+          git commit -m "Backup del Codespace" || echo "No changes to commit"
           git push --force origin main
